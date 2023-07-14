@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "algorithms"
+version = "0.1.0"
+description = ""
+authors = ["MichaelHeinecke <47566635+MichaelHeinecke@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "algorithms", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyspark = "^3.4.1"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
