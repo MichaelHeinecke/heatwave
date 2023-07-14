@@ -106,3 +106,35 @@ There are at least two possible solutions:
    data of month n + 1. The data of month n could be filtered appropriately when processing data for month n + 1, or the
    potentially relevant records could be written to a dedicated location when processing data for month n and read them
    from there when processing data for month n + 1.
+
+### Using A Higher Level Of Abstraction - A Window Function-Based Algorithm
+
+### Using A Higher Level Of Abstraction & Streaming
+
+In the interest of time and as stream processing isn't warranted by the input data arriving in monthly batches, the
+possible options are only briefly touched on without developing an algorithm.
+
+#### Complex Event Processing
+
+The basic concept of Complex Event Processing (CEP) is that pre-defined patterns are searched in a stream of events as
+they arrive.
+
+```mermaid
+flowchart TB
+   Pattern --> Stream
+   subgraph Pattern
+      sequence["🌞🔥🌞🔥🌞"]
+   end
+   subgraph Stream
+      events["🥶🥶🌤️🌤️🌤️🌞🌞🔥🔥🌞🔥🌞🔥🌞🌤️🌤️🌤️🌤️🌤️🥶🥶🥶"]
+   end
+```
+
+This approach could be used to match heat/cold wave patterns on a stream of temperature reading events. An
+implementation could be done with the
+library [FlinkCEP](https://nightlies.apache.org/flink/flink-docs-master/docs/libs/cep/)
+
+#### Stream Processing
+
+It should be possible to create a stateful streaming application using the general idea of
+the [array-based algorithm](#an-array-based-algorithm) with one of the many stream processing libraries.
