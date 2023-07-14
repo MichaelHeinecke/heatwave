@@ -66,7 +66,9 @@ to `temperatures[i]`. By keeping track of the aforementioned fields, heat waves 
 single pass over the temperatures array with linear time complexity and linear space complexity (depending on the input
 array length).
 
-#TODO add code here
+https://github.com/MichaelHeinecke/heatwave/blob/acb4d0fdb5b4cb1f4f961625fd9da67585c23e97/algorithms/src/algorithms/array_based_algorithm.py#L43-L79
+
+[Here](./src/algorithms/array_based_algorithm.py) is the full implementation.
 
 #### Extensibility To Cold Waves
 
