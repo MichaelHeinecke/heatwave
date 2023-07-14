@@ -45,4 +45,4 @@ In this timeseries, we need to identify:
    temperature of at least 25 degree, and
 2. within this sequence, the presence of at least 3 records with a temperature of at least 30 degree.
 
-[^consecutive_days]Point 1 also implies that the data need to be checked for days not represented in the data.
+[^consecutive_days]: Point 1 also implies that the data need to be checked for days not represented in the data.
