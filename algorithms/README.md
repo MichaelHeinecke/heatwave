@@ -62,13 +62,14 @@ Based on that, the algorithm needs to keep track of the following fields:
 ### An Array-Based Algorithm
 
 Let the input be an array of the dates and an array of the temperatures in which `dates[i]` corresponds
-to `temperatures[i]`. By keeping track of the aforementioned fields, heat waves in the input data can be identified in a
-single pass over the temperatures array with linear time complexity and linear space complexity (depending on the input
-array length).
+to `temperatures[i]`. By keeping track of the aforementioned fields,
+
+https://github.com/MichaelHeinecke/heatwave/blob/c1ce5c3e61db1b2dd1a488bc61bbc4073306a1af/algorithms/src/algorithms/array_based_algorithm.py#L13-L17
+
+heat waves in the input data can be identified in a single pass over the temperatures array with linear time complexity
+and linear space complexity (depending on the input array length).
 
 https://github.com/MichaelHeinecke/heatwave/blob/acb4d0fdb5b4cb1f4f961625fd9da67585c23e97/algorithms/src/algorithms/array_based_algorithm.py#L43-L79
-
-[Here](./src/algorithms/array_based_algorithm.py) is the full implementation.
 
 #### Extensibility To Cold Waves
 
