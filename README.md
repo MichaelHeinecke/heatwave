@@ -21,8 +21,8 @@ For the discussion, we start out with developing a heat wave-specific algorithm 
 
 ## Input Data
 
-The input data are a timeseries in which each record has temperature reading fields. Conceptually, the relevant input
-data has the form as depicted in table below.
+The input data are batches of a timeseries in which each record has temperature reading fields. Conceptually, the
+relevant input data has the form as depicted in table below.
 
 | Date       | Temperature |
 |------------|-------------|
@@ -46,3 +46,63 @@ In this timeseries, we need to identify:
 2. within this sequence, the presence of at least 3 records with a temperature of at least 30 degree.
 
 [^consecutive_days]: Point 1 also implies that the data need to be checked for days not represented in the data.
+
+## Deduction Of Algorithm
+
+An expected example output of the algorithm is shown below.
+
+| From date   | To date (inc.) | Duration (in days) | Number of tropical days | Max temperature |
+|-------------|----------------|--------------------|-------------------------|-----------------|
+| 31 jul 2003 | 13 aug 2003    | 14                 | 7                       | 35.0            |
+
+Based on that, the algorithm needs to keep track of the following fields:
+
+1. Start date
+2. End date
+3. Number of days
+4. Number of tropical days (days with a maximum temperatures of at least 30 degrees)
+5. Maximum temperature in the sequence
+
+### An Array-Based Algorithm
+
+Let the input be an array of the dates and an array of the temperatures in which `dates[i]` corresponds
+to `temperatures[i]`. By keeping track of the aforementioned fields, heat waves in the input data can be identified in a
+single pass over the temperatures array with linear time complexity and linear space complexity (depending on the input
+array length).
+
+#TODO add code here
+
+#### Extensibility To Cold Waves
+
+By adding two fields
+
+1. Number of ice days (maximum temperatures less than 0 degrees)
+2. Number of severe frost days (minimum temperature less than -10 degrees)
+
+and adding equivalent logic to check for cold waves, the algorithm could be applied to calculate cold waves as well.
+
+#### Horizontal Scalability
+
+Scaling the algorithm horizontally is a little trickier. To process data in parallel on multiple machines, the input
+data has to be split and sent to other machines. If the data is split arbitrarily, data for a single heatwave might be
+sent to separate machines, in which case the heat wave cannot be calculated, would be calculated as two separate ones,
+or would be calculated but not in its full length.
+
+The data would have to be partitioned appropriately to ensure that heat wave data aren't cut in the middle, before the
+data are sent to separate workers.
+
+#### Issue With Processing New Batches Of Data
+
+The data comes in monthly batches. A heat wave might start in month n and continue in month n + 1. Hence, processing new
+batches of data comes with an issue similar to the one described in the section
+on [Horizontal Scalability](#horizontal-scalability).
+
+Damn you, batch processing! :D
+
+There are at least two possible solutions:
+
+1. The brute force approach: Reprocess everything. Simple but not efficient.
+2. Reprocess parts of the data of month n (possibly relevant records identified by their temperature) when processing
+   data of month n + 1. The data of month n could be filtered appropriately when processing data for month n + 1, or the
+   potentially relevant records could be written to a dedicated location when processing data for month n and read them
+   from there when processing data for month n + 1.
