@@ -96,7 +96,7 @@ data are sent to separate workers.
 
 The data comes in monthly batches. A heat wave might start in month n and continue in month n + 1. Hence, processing new
 batches of data comes with an issue similar to the one described in the section
-[Horizontal Scalability](#a-namehorizontal-scalability-array-basedhorizontal-scalabilitya).
+[Horizontal Scalability](#horizontal-scalability-array-based).
 
 Damn you, batch processing! :D
 
