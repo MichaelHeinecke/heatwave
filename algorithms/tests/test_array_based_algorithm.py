@@ -1,6 +1,6 @@
 import pytest
 
-from src.algorithms.array_based_algorithm import calculate_heat_wave
+from src.algorithms.array_based_algorithm import calculate_heat_wave, HeatwaveHelper
 from datetime import date, timedelta
 
 
@@ -68,3 +68,33 @@ def test_when_inputs_are_not_of_equal_length_then_raise_value_error(dates_genera
     dates = dates_generator(2)
     with pytest.raises(ValueError, match="The input lists must be of equal length."):
         calculate_heat_wave(dates, temperatures)
+
+
+@pytest.fixture
+def heatwave_helper():
+    return HeatwaveHelper()
+
+
+def test_when_heatwave_helper_is_instantiated_then_all_fields_are_zero(heatwave_helper):
+    assert heatwave_helper.start_index == 0
+    assert heatwave_helper.end_index == 0
+    assert heatwave_helper.number_of_days == 0
+    assert heatwave_helper.number_of_tropical_days == 0
+    assert heatwave_helper.max_temp == 0.0
+
+
+def test_when_fields_constitute_heat_wave_then_true(heatwave_helper):
+    heatwave_helper.number_of_days = 5
+    heatwave_helper.number_of_tropical_days = 3
+
+    assert heatwave_helper.is_heatwave() is True
+
+
+@pytest.mark.parametrize("number_days,tropical_days", [(4, 3), (5, 2)])
+def test_when_fields_do_not_constitute_heat_wave_then_false(
+    heatwave_helper, number_days, tropical_days
+):
+    heatwave_helper.number_of_days = number_days
+    heatwave_helper.number_of_tropical_days = tropical_days
+
+    assert heatwave_helper.is_heatwave() is False
