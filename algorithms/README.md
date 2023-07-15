@@ -106,9 +106,15 @@ There are at least two possible solutions:
    potentially relevant records could be written to a dedicated location when processing data for month n and read them
    from there when processing data for month n + 1.
 
-### Using A Higher Level Of Abstraction - A Window Function-Based Algorithm
+### A Window Function-Based Algorithm
 
-### Using A Higher Level Of Abstraction & Streaming
+#### Extensibility To Cold Waves
+
+#### Horizontal Scalability Of Window Function-Based Algorithm
+
+#### Issue With Processing New Batches Of Data
+
+### Streaming Algorithms
 
 In the interest of time and as stream processing isn't warranted by the input data arriving in monthly batches, the
 possible options are only briefly touched on without developing an algorithm.
