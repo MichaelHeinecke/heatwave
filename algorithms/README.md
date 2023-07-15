@@ -80,7 +80,9 @@ By adding two fields
 
 and adding equivalent logic to check for cold waves, the algorithm could be applied to calculate cold waves as well.
 
-#### Horizontal Scalability
+
+
+#### Horizontal Scalability<a name="horizontal-scalability-array-based"></a>
 
 Scaling the algorithm horizontally is a little trickier. To process data in parallel on multiple machines, the input
 data has to be split and sent to other machines. If the data is split arbitrarily, data for a single heatwave might be
@@ -94,7 +96,7 @@ data are sent to separate workers.
 
 The data comes in monthly batches. A heat wave might start in month n and continue in month n + 1. Hence, processing new
 batches of data comes with an issue similar to the one described in the section
-on [Horizontal Scalability](#horizontal-scalability).
+[Horizontal Scalability](#horizontal-scalabilitya-namehorizontal-scalability-array-baseda).
 
 Damn you, batch processing! :D
 
@@ -110,7 +112,7 @@ There are at least two possible solutions:
 
 #### Extensibility To Cold Waves
 
-#### Horizontal Scalability Of Window Function-Based Algorithm
+#### Horizontal Scalability
 
 #### Issue With Processing New Batches Of Data
 
