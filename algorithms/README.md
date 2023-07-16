@@ -195,8 +195,6 @@ days), we identify heat waves.
 </li>
 </ol>
 
-# TODO embed code
-
 There are two caveats to consider:
 
 <ol>
@@ -214,6 +212,10 @@ all data to a single partition, not allowing for any parallelism. This caveat wi
 section <a href="#horizontal-scalability-window-functions-based">Horizontal Scalability”</a>.
 </li>
 </ol>
+
+An example implementation using PySpark, including handling the edge cases described above:
+
+https://github.com/MichaelHeinecke/heatwave/blob/72f2bd39908bbf7c46742c2b2bdf06944f82d1c5/algorithms/src/algorithms/window_functions_based_algorithm.py#L36-L104
 
 #### Extensibility To Cold Waves
 
