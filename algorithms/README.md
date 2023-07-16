@@ -1,10 +1,10 @@
-# Discussion Of Problem And Deduction Of Algorithm
+# Discussion Of Problem And Deduction Of Algorithms
 
 ## General Considerations
 
 The problem that needs to be solved is calculating heat waves based on
 the [KNMI definition](https://www.knmi.nl/kennis-en-datacentrum/uitleg/hittegolf):
-> In the Netherlands, a heat wave is a succession of at least 5 summer days (maximum temperature 25.0 °C or higher)  in
+> In the Netherlands, a heat wave is a succession of at least 5 summer days (maximum temperature 25.0 °C or higher) in
 > De Bilt, of which at least three are tropical days (maximum temperature 30.0 °C or higher).
 
 As there's a follow-up requirement to extend the application to calculate cold waves
