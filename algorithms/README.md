@@ -129,7 +129,7 @@ Going back to the same sample data, we need to identify which where a potential 
 | 2004-06-12 | 21          |
 | 2004-06-13 | 26          |
 
-This can be done easily in two steps:
+This can be done easily in four steps:
 
 <ol>
 <li>
@@ -185,7 +185,7 @@ In the next step, each record that doesn't mark the start of a sequence will be 
 Lastly, grouping by the Start Of Sequence column, we can:
 <ul>
 <li>count the rows to get the duration of the potential heat wave</li>
-<li>sum the number of days at least 30 degrees (using a helper column with a value of 1 for qualified days and null otherwise)</li>
+<li>sum the number of days with at least 30 degrees (using a helper column with a value of 1 for qualified days and null otherwise)</li>
 <li>find the maximum temperature</li>
 <li>get the end date by adding the duration to the start date</li>
 </ul>
@@ -217,9 +217,65 @@ section <a href="#horizontal-scalability-window-functions-based">Horizontal Scal
 
 #### Extensibility To Cold Waves
 
+The algorithm can be adapted for cold waves by:
+
+1. Changing the filter expressions to remove any days with at least 0 degrees in step 1 of the algorithm.
+2. Counting the number of days with temperatures less than -10 degrees in step 3.
+
 #### <a id="horizontal-scalability-window-functions-based">Horizontal Scalability</a>
 
-#### Issue With Processing New Batches Of Data
+Similar considerations as for the array-based algorithm apply.
+
+As mentioned as a caveat in the algorithm description, a global window across the entire dataframe is used. This means,
+that all data is moved to a single partition, equivalent to be processed on a single worker. At the point during
+processing the data where the algorithm is applied, the data needs to be sufficiently small.
+
+Let's think this through for our actual input data, if it could become problematic:
+The input data includes a record for every 10 minutes for multiple weather stations in the Netherlands with various data
+points. For the algorithm, we only care about:
+
+1. The data for a single weather station (De Bilt).
+2. Only the datetime and temperature columns
+3. The maximum temperature per day
+
+Prior to the algorithm being applied, the pipeline will follow the steps:
+
+1. Reading the data can happen in parallel, given that we have multiple input files in a non-splittable format.
+2. Filtering for the relevant data can happen in a distributed fashion.
+3. The temperature aggregation per day can also happen in a distributed fashion. As the aggregation requires a shuffle,
+   to move records with the same key (the date) to the same partition which requires sending data between workers across
+   the network. To make sure as little data as possible needs to be sent between workers, we need to ensure that
+   filtering in step 2 happens prior to step 3 rather than after.
+
+At this point, we will have one record per day for each day with at least 25 degrees. For 10 years worth of data, this
+would be upper-capped at 3652 records. With this amount of data, we could even check the data manually for heat waves if
+we really wanted. Meaning to say, packing this amount of data in a single partition and applying a global window to it
+is nowhere near being problematic for performance.
+
+#### Processing New Batches Of Data
+
+Similar considerations as for the array-based algorithm apply.
+
+If we want to avoid reprocessing the entire data with every new batch, we can process batches in a rolling fashion:
+
+1. month n, month n + 1
+2. month n + 1, month + 2
+3. etc.
+
+We don't want to calculate a potential partial heat wave at the beginning of the dataset being processed. As the
+algorithm already doesn't identify the start date of sequence of days for the first sequence in the dataset being
+processed, we can simply filter those records out.
+
+What we do want, recalculating a heat wave that might extend into the next month. Assuming we have a heat wave that
+starts in month n + 1 and carries on in month n + 2. When processing the second rolling batch, this heat wave will be
+recalculated if there are additional eligible days at the beginning of month n + 2. A simple way of updating this heat
+wave in our overall result dataset would be updating the pertaining record identified by using the start date of heat
+waves as their key (implying that the data sink for the pipeline should support update operations).
+
+If we really want to save on compute, the rolling batches could also be made conditional. Only read and process the
+previous month's data along with the current month's data, if the last identified heat wave lasted until the last day of
+the previous month and the current months data has an eligible day with at least 25 degrees on the first day of the
+month.
 
 ### Streaming Algorithms
 
