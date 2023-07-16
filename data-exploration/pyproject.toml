@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "data-exploration"
+version = "0.1.0"
+description = ""
+authors = ["MichaelHeinecke <47566635+MichaelHeinecke@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyspark = "^3.4.1"
+jupyter = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
