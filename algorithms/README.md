@@ -23,7 +23,7 @@ relevant input data has the form as depicted in table below.
 | Date       | Temperature |
 |------------|-------------|
 | 2004-06-01 | 21          |
-| 2004-06-02 | 24          |
+| 2004-06-02 | 25          |
 | 2004-06-03 | 22          |
 | 2004-06-04 | 25          |
 | 2004-06-05 | 26          |
@@ -34,6 +34,7 @@ relevant input data has the form as depicted in table below.
 | 2004-06-10 | 25          |
 | 2004-06-11 | 22          |
 | 2004-06-12 | 21          |
+| 2004-06-13 | 26          |
 
 In this timeseries, we need to identify:
 
@@ -80,9 +81,7 @@ By adding two fields
 
 and adding equivalent logic to check for cold waves, the algorithm could be applied to calculate cold waves as well.
 
-
-
-#### <a name="horizontal-scalability-array-based">Horizontal Scalability</a>
+#### <a id="horizontal-scalability-array-based">Horizontal Scalability</a>
 
 Scaling the algorithm horizontally is a little trickier. To process data in parallel on multiple machines, the input
 data has to be split and sent to other machines. If the data is split arbitrarily, data for a single heatwave might be
@@ -96,7 +95,7 @@ data are sent to separate workers.
 
 The data comes in monthly batches. A heat wave might start in month n and continue in month n + 1. Hence, processing new
 batches of data comes with an issue similar to the one described in the section
-[Horizontal Scalability](#horizontal-scalability-array-based).
+<a href="#horizontal-scalability-array-based">Horizontal Scalability</a>.
 
 Damn you, batch processing! :D
 
@@ -110,9 +109,115 @@ There are at least two possible solutions:
 
 ### A Window Function-Based Algorithm
 
+At a higher level of abstraction operating on a dataframe, window functions can be used to calculate heat waves.
+
+Going back to the same sample data, we need to identify which where a potential heat wave starts and where it ends.
+
+| Date       | Temperature |
+|------------|-------------|
+| 2004-06-01 | 21          |
+| 2004-06-02 | 25          |
+| 2004-06-03 | 22          |
+| 2004-06-04 | 25          |
+| 2004-06-05 | 26          |
+| 2004-06-06 | 30          |
+| 2004-06-07 | 30          |
+| 2004-06-08 | 25          |
+| 2004-06-09 | 31          |
+| 2004-06-10 | 25          |
+| 2004-06-11 | 22          |
+| 2004-06-12 | 21          |
+| 2004-06-13 | 26          |
+
+This can be done easily in two steps:
+
+<ol>
+<li>
+Remove all records with temperatures lower than 25 degrees.
+
+| Date       | Temperature |
+|------------|-------------|
+| 2004-06-02 | 25          |
+| 2004-06-04 | 25          |
+| 2004-06-05 | 26          |
+| 2004-06-06 | 30          |
+| 2004-06-07 | 30          |
+| 2004-06-08 | 25          |
+| 2004-06-09 | 31          |
+| 2004-06-10 | 25          |
+| 2004-06-13 | 26          |
+
+</li>
+<li>
+Calculate the date difference for each row and it's preceding record using across a global window. If the difference is higher than 1 day, the
+record marks the start of an uninterrupted sequence of days.
+
+| Date       | Temperature | Difference To Previous Row | Start Of Sequence |
+|------------|-------------|----------------------------|-------------------|
+| 2004-06-02 | 25          | null                       | null              |
+| 2004-06-04 | 25          | 2                          | 2004-06-04        |
+| 2004-06-05 | 26          | 1                          | null              |
+| 2004-06-06 | 30          | 1                          | null              |
+| 2004-06-07 | 30          | 1                          | null              |
+| 2004-06-08 | 25          | 1                          | null              |
+| 2004-06-09 | 31          | 1                          | null              |
+| 2004-06-10 | 25          | 1                          | null              |
+| 2004-06-13 | 26          | 1                          | null              |
+
+</li>
+<li>
+In the next step, each record that doesn't mark the start of a sequence will be assigned the last non-null value across a global window.
+
+| Date       | Temperature | Start Of Sequence |
+|------------|-------------|-------------------|
+| 2004-06-02 | 25          | null              |
+| 2004-06-04 | 25          | 2004-06-04        |
+| 2004-06-05 | 26          | 2004-06-04        |
+| 2004-06-06 | 30          | 2004-06-04        |
+| 2004-06-07 | 30          | 2004-06-04        |
+| 2004-06-08 | 25          | 2004-06-04        |
+| 2004-06-09 | 31          | 2004-06-04        |
+| 2004-06-10 | 25          | 2004-06-04        |
+| 2004-06-13 | 26          | 2004-06-04        |
+
+</li>
+<li>
+Lastly, grouping by the Start Of Sequence column, we can:
+<ul>
+<li>count the rows to get the duration of the potential heat wave</li>
+<li>sum the number of days at least 30 degrees (using a helper column with a value of 1 for qualified days and null otherwise)</li>
+<li>find the maximum temperature</li>
+<li>get the end date by adding the duration to the start date</li>
+</ul>
+
+By filtering the resulting dataframe on the duration (>=5 days) and the number of days with at least 30 degrees (>=3
+days), we identify heat waves.
+</li>
+</ol>
+
+# TODO embed code
+
+There are two caveats to consider:
+
+<ol>
+<li>
+The algorithm cannot calculate the difference to the previous row for the very first uninterrupted sequence of days
+with at least 25 degrees found in the data. With a little additional logic, this edge case can be handled.<br>
+However, there's an edge case of this edge case. An identified heatwave might be partial if the first remaining record 
+after filtering out days with less than 25 degrees falls on the first of the month. In this case, the heat wave might
+extend into the previous month, for which we have no data. Partial heat waves won't be calculated in the
+implementation, but ultimately it also could be done if required by users.
+</li>
+<li>
+As mentioned in the description above, the window functions are applied across a global window. Which requires moving
+all data to a single partition, not allowing for any parallelism. This caveat will further be discussed in the 
+section <a href="#horizontal-scalability-window-functions-based">Horizontal Scalability”</a>.
+</li>
+</ol>
+
 #### Extensibility To Cold Waves
 
-#### Horizontal Scalability
+#### <a id="horizontal-scalability-window-functions-based">Horizontal Scalability</a>
 
 #### Issue With Processing New Batches Of Data
 
