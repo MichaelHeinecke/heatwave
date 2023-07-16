@@ -1,0 +1,49 @@
+name: CI Java
+
+on:
+  pull_request:
+    paths:
+      - 'heatwave-core/src/**'
+      - 'heatwave-core/pom.xml'
+
+env:
+  JAVA_VERSION: '17'
+
+defaults:
+  run:
+    shell: bash
+    working-directory: 'heatwave-core/'
+
+jobs:
+  validate:
+    name: Maven Validate Including Checkstyle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # pin@v3
+
+      - name: Set Up JDK
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # pin@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Validate With Maven
+        run: mvn --batch-mode --no-transfer-progress validate
+
+  test:
+    name: Run JUnit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # pin@v3
+
+      - name: Set Up JDK
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # pin@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Test With Maven
+        run: mvn --batch-mode --no-transfer-progress clean test
