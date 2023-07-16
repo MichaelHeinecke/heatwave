@@ -6,3 +6,4 @@ Home to the code for the Xebia Data assignment.
 following their definition of heat waves.
 
 * [Discussion Of Algorithms](./algorithms)
+* [Exploration Of The Input Data](./data-exploration)

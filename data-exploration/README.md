@@ -22,5 +22,5 @@ The data-exploration notebook contains an analysis of the input files. A summary
 * The minimum and maximum temperature columns' min and max values are close to the temperature columns min and max
   values across all years, giving no indication for a closer look.
 * Compared to the temperature column (t_dryb_10), the minimum temperature(tn_dryb_10) and maximum temperature (
-  tn_dryb_10) columns have a few more missing readings (less than a dozen per year). To fill in those blanks, we can
+  tn_dryb_10) columns have a few more missing readings (less than a dozen per year). To fill in those blanks, we could
   consider coalescing min/max temperature columns and the temperature column.
