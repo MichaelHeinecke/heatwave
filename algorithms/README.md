@@ -209,7 +209,7 @@ implementation, but ultimately it also could be done if required by users.
 <li>
 As mentioned in the description above, the window functions are applied across a global window. Which requires moving
 all data to a single partition, not allowing for any parallelism. This caveat will further be discussed in the 
-section <a href="#horizontal-scalability-window-functions-based">Horizontal Scalability”</a>.
+section <a href="#horizontal-scalability-window-functions-based">Horizontal Scalability</a>.
 </li>
 </ol>
 
