@@ -20,6 +20,15 @@
     <checkstyle-maven-plugin.version>3.3.0</checkstyle-maven-plugin.version>
   </properties>
 
+  <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_2.13</artifactId>
+      <version>3.4.1</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
