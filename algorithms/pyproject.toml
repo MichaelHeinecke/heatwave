@@ -9,6 +9,7 @@ packages = [{include = "algorithms", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 pyspark = "^3.4.1"
+chispa = "^0.9.2"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"
