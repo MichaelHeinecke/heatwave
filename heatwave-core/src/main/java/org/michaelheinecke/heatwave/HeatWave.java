@@ -36,39 +36,6 @@ class HeatWave {
   }
 
   /**
-   * Check if HeatWave instance is a heat wave following the KNMI definition of minimum 5 days
-   * and minimum 3 tropical days.
-   *
-   * @return True if HeatWave is a heat wave, otherwise false.
-   */
-  boolean isHeatwave() {
-    return this.numberOfDays >= 5 && this.numberOfTropicalDays >= 3;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {return true;}
-    if (o == null || getClass() != o.getClass()) {return false;}
-    HeatWave heatWave = (HeatWave) o;
-    return numberOfDays == heatWave.numberOfDays
-        && numberOfTropicalDays == heatWave.numberOfTropicalDays
-        && Double.compare(heatWave.maxTemp, maxTemp) == 0 && Objects.equals(startDate,
-        heatWave.startDate) && Objects.equals(endDate, heatWave.endDate);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(startDate, endDate, numberOfDays, numberOfTropicalDays, maxTemp);
-  }
-
-  @Override
-  public String toString() {
-    return String.format(
-        "From date: %s, to date: %s, duration: %d, Number Tropical Days: %d, Max Temperature: %"
-            + ".1f", startDate, endDate, numberOfDays, numberOfTropicalDays, maxTemp);
-  }
-
-  /**
    * Core algorithm to calculate heat waves.
    *
    * @param days A list of DailyTemperatureReading objects, sorted by date in ascending order,
@@ -109,5 +76,42 @@ class HeatWave {
     }
 
     return heatwaves;
+  }
+
+  /**
+   * Check if HeatWave instance is a heat wave following the KNMI definition of minimum 5 days
+   * and minimum 3 tropical days.
+   *
+   * @return True if HeatWave is a heat wave, otherwise false.
+   */
+  boolean isHeatwave() {
+    return this.numberOfDays >= 5 && this.numberOfTropicalDays >= 3;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    HeatWave heatWave = (HeatWave) o;
+    return numberOfDays == heatWave.numberOfDays
+        && numberOfTropicalDays == heatWave.numberOfTropicalDays
+        && Double.compare(heatWave.maxTemp, maxTemp) == 0 && Objects.equals(startDate,
+        heatWave.startDate) && Objects.equals(endDate, heatWave.endDate);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(startDate, endDate, numberOfDays, numberOfTropicalDays, maxTemp);
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "From date: %s, to date: %s, duration: %d, Number Tropical Days: %d, Max Temperature: %"
+            + ".1f", startDate, endDate, numberOfDays, numberOfTropicalDays, maxTemp);
   }
 }
