@@ -25,6 +25,8 @@ import scala.Tuple2;
  * <p>The main method of this class is the entry point for running heatwave.
  */
 public class HeatWaveApp {
+  private static final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   /**
    * Core algorithm to calculate heat waves.
@@ -39,25 +41,25 @@ public class HeatWaveApp {
 
     for (int i = 0; i < days.size(); i++) {
       DailyTemperatureReading day = days.get(i);
-      if (day.maxTemperature >= 25.0) {
+      if (day.maxTemperature() >= 25.0) {
         wave.numberOfDays++;
         if (wave.startDate == null) {
-          wave.startDate = day.date;
+          wave.startDate = day.date();
         }
       }
 
-      if (day.maxTemperature >= 30.0) {
+      if (day.maxTemperature() >= 30.0) {
         wave.numberOfTropicalDays++;
       }
 
-      if (day.maxTemperature > wave.maxTemp) {
-        wave.maxTemp = day.maxTemperature;
+      if (day.maxTemperature() > wave.maxTemp) {
+        wave.maxTemp = day.maxTemperature();
       }
 
       // If we reach the end of the input array,
       // or the end of an uninterrupted sequence of days with maximum temperatures of at least 25,
       // check if we found a heat wave.
-      if (i == days.size() - 1 || ChronoUnit.DAYS.between(day.date, days.get(i + 1).date) > 1) {
+      if (i == days.size() - 1 || ChronoUnit.DAYS.between(day.date(), days.get(i + 1).date()) > 1) {
         if (wave.isHeatwave()) {
           // Calculate the inclusive end date of the wave.
           wave.endDate = wave.startDate.plusDays(wave.numberOfDays - 1);
@@ -72,23 +74,25 @@ public class HeatWaveApp {
   }
 
   static LocalDate parseDateTime(String string) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     return LocalDate.parse(string, formatter);
   }
 
   static void run(JavaSparkContext sc, String path) {
-    JavaRDD<DailyTemperatureReading> preprocessedRdd = sc
-        .textFile(path, 8)
+    JavaRDD<DailyTemperatureReading> preprocessedRdd = sc.textFile(path, 8)
         // Remove header rows
         .filter(line -> !line.startsWith("#"))
-        .map(DailyTemperatureReading::parseRow)
+        .map(row ->
+            new DailyTemperatureReading(LocalDate.parse(row.substring(0, 21).strip(), formatter),
+                row.substring(21, 41).strip(),
+                row.substring(309, 329).strip().equals("") ? null :
+                    Double.parseDouble(row.substring(309, 329).strip())))
         // Only keeps rows for weather station De Bilt.
-        .filter(row -> Objects.equals(row.location, "260_T_a"))
+        .filter(row -> Objects.equals(row.location(), "260_T_a"))
         // Remove rows without temperature reading and are not potentially part of a heat wave.
-        .filter(row -> row.maxTemperature != null && row.maxTemperature >= 25.0)
+        .filter(row -> row.maxTemperature() != null && row.maxTemperature() >= 25.0)
         // Find max temperature per date.
-        .mapToPair(row -> (new Tuple2<>(row.date, row)))
-        .reduceByKey((v1, v2) -> (v1.maxTemperature >= v2.maxTemperature ? v1 : v2))
+        .mapToPair(row -> (new Tuple2<>(row.date(), row)))
+        .reduceByKey((v1, v2) -> (v1.maxTemperature() >= v2.maxTemperature() ? v1 : v2))
         // Sort by date for the heatwave calculation algorithm.
         .sortByKey().values();
 
