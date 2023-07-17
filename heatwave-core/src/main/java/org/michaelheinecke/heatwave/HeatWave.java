@@ -31,6 +31,12 @@ class HeatWave {
     this.maxTemp = 0.0;
   }
 
+  /**
+   * Check if HeatWave instance is a heat wave following the KNMI definition of minimum 5 days
+   * and minimum 3 tropical days.
+   *
+   * @return True if HeatWave is a heat wave, otherwise false.
+   */
   boolean isHeatwave() {
     return this.numberOfDays >= 5 && this.numberOfTropicalDays >= 3;
   }
