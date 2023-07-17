@@ -55,11 +55,9 @@ class HeatWave {
 
     for (int i = 0; i < days.size(); i++) {
       DailyTemperatureReading day = days.get(i);
-      if (day.maxTemperature() >= 25.0) {
-        wave.numberOfDays++;
-        if (wave.startDate == null) {
-          wave.startDate = day.date();
-        }
+      wave.numberOfDays++;
+      if (wave.startDate == null) {
+        wave.startDate = day.date();
       }
 
       if (day.maxTemperature() >= 30.0) {
