@@ -17,7 +17,7 @@ definition:
 
 ### Notes On Code Style
 
-The Checkstyle is bound the Maven validate phase `validate` and configured to
+Checkstyle is bound to the Maven phase `validate` and configured to
 error out in case of violations. The rule set used are the Google checks, which
 can be found at `../config/google_checks.xml`.
 
@@ -32,6 +32,8 @@ Compile the code with `mvn clean compile`
 Tests are written with JUnit5. Run the tests with `mvn clean test`.
 
 ### Running The App
+
+#### On The Local Machine
 
 Run the app locally with
 
@@ -48,6 +50,31 @@ sun.nio.ch.DirectBuffer although access to this was restricted in Java 9. For
 running spark locally, this JVM option needs to be passed. It is not required
 when running the app with
 spark-submit. [Source](https://stackoverflow.com/questions/10108374/maven-how-to-run-a-java-file-from-command-line-passing-arguments)
+
+#### In A Docker Container
+
+The Maven Assembly Plugin is bound to the phase`package`. The application can
+be packaged as a fat executable jar by running `mvn package`.
+
+Subsequently, a docker image can be built with the provided Dockerfile.
+
+```bash
+docker build -t michaelheinecke/heatwave .
+```
+
+And then run with
+
+```bash
+docker run -p 4040:4040 -it -v \
+/Users/michael.heinecke/IdeaProjects/MichaelHeinecke/heatwave/data:/app/data \
+michaelheinecke/heatwave /app/data
+```
+
+Note that the input files need to be mounted into the container for processing
+using the -v flag. The command line argument `/app/data` points the application
+to the folder in the container where the input data is located.
+
+The Spark UI will be available at `localhost:4040`.
 
 ## Design Considerations
 
