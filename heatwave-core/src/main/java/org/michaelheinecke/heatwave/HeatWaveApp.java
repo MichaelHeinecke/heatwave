@@ -1,4 +1,4 @@
-package org.michaelheinecke;
+package org.michaelheinecke.heatwave;
 
 
 import java.io.Serializable;
@@ -14,11 +14,28 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
+/**
+ * HeatWaveApp is home to the core algorithm of heatwave.
+ *
+ * <p>The algorithm calculates heat waves in the Netherlands following the definition of the KNMI:
+ *
+ * <p>A heat wave is a succession of at least 5 summer days (maximum temperature
+ * > 25.0 °C or higher) in De Bilt, of which at least three are tropical days
+ * > (maximum temperature 30.0 °C or higher).
+ *
+ * <p>The main method of this class is the entry point for running heatwave.
+ */
 public class HeatWaveApp {
 
+  /**
+   * Core algorithm to calculate heat waves.
+   *
+   * @param days A list of DailyTemperatureReading objects, sorted by date in ascending order,
+   *             and filtered for days with a maximum temperature of at least 25.0 °C.
+   * @return A list of HeatWave objects, representing a heat wave.
+   */
   static List<HeatWave> calculateHeatWaves(List<DailyTemperatureReading> days) {
     List<HeatWave> heatwaves = new ArrayList<>();
-
     HeatWave wave = new HeatWave();
 
     for (int i = 0; i < days.size(); i++) {
@@ -80,6 +97,9 @@ public class HeatWaveApp {
     System.out.println(Arrays.toString(heatWaves.toArray()));
   }
 
+  /**
+   * This is the entry point for running heatwave.
+   */
   public static void main(String[] args) {
     SparkConf conf = new SparkConf().setAppName("HeatWaveApp").setMaster("local[*]");
 
