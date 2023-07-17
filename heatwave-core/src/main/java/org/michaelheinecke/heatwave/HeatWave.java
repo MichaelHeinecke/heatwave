@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * HeatWave is home to the core algorithm of heatwave.
@@ -42,6 +43,22 @@ class HeatWave {
    */
   boolean isHeatwave() {
     return this.numberOfDays >= 5 && this.numberOfTropicalDays >= 3;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {return true;}
+    if (o == null || getClass() != o.getClass()) {return false;}
+    HeatWave heatWave = (HeatWave) o;
+    return numberOfDays == heatWave.numberOfDays
+        && numberOfTropicalDays == heatWave.numberOfTropicalDays
+        && Double.compare(heatWave.maxTemp, maxTemp) == 0 && Objects.equals(startDate,
+        heatWave.startDate) && Objects.equals(endDate, heatWave.endDate);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(startDate, endDate, numberOfDays, numberOfTropicalDays, maxTemp);
   }
 
   @Override
