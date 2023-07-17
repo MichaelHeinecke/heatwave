@@ -3,14 +3,23 @@ package org.michaelheinecke.heatwave;
 
 import static org.michaelheinecke.heatwave.HeatWave.calculateHeatWaves;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.logging.Log;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 /**
@@ -21,6 +30,7 @@ import scala.Tuple2;
  * <p>When running the app, a path to the input data files needs to be passed in.
  */
 public class HeatWaveApp {
+  private static final Logger LOG = LoggerFactory.getLogger(HeatWaveApp.class);
   private static final DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -55,7 +65,20 @@ public class HeatWaveApp {
     List<DailyTemperatureReading> potentialHeatWaveDays = preprocessedRdd.collect();
     List<HeatWave> heatWaves = calculateHeatWaves(potentialHeatWaveDays);
 
-    System.out.println(Arrays.toString(heatWaves.toArray()));
+    LOG.info("Calculated result:\n{}", Arrays.toString(heatWaves.toArray()));
+
+    String fileName = "heatwaves.txt";
+    try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+        new FileOutputStream(fileName), StandardCharsets.UTF_8))) {
+      for (HeatWave heatWave : heatWaves) {
+        writer.write(String.valueOf(heatWave));
+        writer.write(System.lineSeparator());
+      }
+    } catch (IOException e) {
+      LOG.error("Encountered error while");
+      throw new RuntimeException(e);
+    }
+    LOG.info("Wrote results to {}", fileName);
   }
 
   /**
@@ -68,6 +91,7 @@ public class HeatWaveApp {
     }
 
     String path = args[0];
+    LOG.info("Reading files from path: {}", path);
 
     SparkConf conf = new SparkConf().setAppName("HeatWaveApp").setMaster("local[*]");
 
