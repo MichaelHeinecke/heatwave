@@ -23,12 +23,15 @@ class HeatWave {
   int numberOfTropicalDays;
   double maxTemp;
 
-  HeatWave() {
-    this.startDate = null;
-    this.endDate = null;
-    this.numberOfDays = 0;
-    this.numberOfTropicalDays = 0;
-    this.maxTemp = 0.0;
+  HeatWave() {}
+
+  HeatWave(LocalDate startDate, LocalDate endDate, int numberOfDays, int numberOfTropicalDays,
+           double maxTemp) {
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.numberOfDays = numberOfDays;
+    this.numberOfTropicalDays = numberOfTropicalDays;
+    this.maxTemp = maxTemp;
   }
 
   /**
