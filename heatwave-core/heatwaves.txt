@@ -1,0 +1,11 @@
+From date: 2003-07-31, to date: 2003-08-13, duration: 14, Number Tropical Days: 7, Max Temperature: 35,0
+From date: 2004-08-02, to date: 2004-08-11, duration: 10, Number Tropical Days: 3, Max Temperature: 32,5
+From date: 2005-06-18, to date: 2005-06-24, duration: 7, Number Tropical Days: 3, Max Temperature: 32,8
+From date: 2006-06-30, to date: 2006-07-06, duration: 7, Number Tropical Days: 3, Max Temperature: 32,0
+From date: 2006-07-15, to date: 2006-07-30, duration: 16, Number Tropical Days: 8, Max Temperature: 35,7
+From date: 2013-07-21, to date: 2013-07-27, duration: 7, Number Tropical Days: 3, Max Temperature: 32,6
+From date: 2015-06-30, to date: 2015-07-05, duration: 6, Number Tropical Days: 3, Max Temperature: 33,1
+From date: 2018-07-15, to date: 2018-07-27, duration: 13, Number Tropical Days: 4, Max Temperature: 35,7
+From date: 2018-07-29, to date: 2018-08-07, duration: 10, Number Tropical Days: 4, Max Temperature: 33,9
+From date: 2019-07-22, to date: 2019-07-27, duration: 6, Number Tropical Days: 4, Max Temperature: 37,5
+From date: 2019-08-23, to date: 2019-08-28, duration: 6, Number Tropical Days: 3, Max Temperature: 32,8
