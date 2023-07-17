@@ -24,10 +24,6 @@ public class HeatWaveApp {
   private static final DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-  static LocalDate parseDateTime(String string) {
-    return LocalDate.parse(string, formatter);
-  }
-
   /**
    * The run method reads the input files, pre-processes the data, and calls the algorithm to find
    * heat waves in the data.
