@@ -77,19 +77,21 @@ public class HeatWaveApp {
     return LocalDate.parse(string, formatter);
   }
 
-  static void run(JavaSparkContext sc) {
-    JavaRDD<DailyTemperatureReading> preprocessedRdd =
-        sc.textFile("./data/kis_tot_20030*", 8).filter(line -> !line.startsWith("#"))
-            .map(DailyTemperatureReading::parseRow)
-            // Only keeps rows for weather station De Bilt.
-            .filter(row -> Objects.equals(row.location, "260_T_a"))
-            // Remove rows without temperature reading and are not potentially part of a heat wave.
-            .filter(row -> row.maxTemperature != null && row.maxTemperature >= 25.0)
-            // Find max temperature per date.
-            .mapToPair(row -> (new Tuple2<>(row.date, row)))
-            .reduceByKey((v1, v2) -> (v1.maxTemperature >= v2.maxTemperature ? v1 : v2))
-            // Sort by date for the heatwave calculation algorithm.
-            .sortByKey().values();
+  static void run(JavaSparkContext sc, String path) {
+    JavaRDD<DailyTemperatureReading> preprocessedRdd = sc
+        .textFile(path, 8)
+        // Remove header rows
+        .filter(line -> !line.startsWith("#"))
+        .map(DailyTemperatureReading::parseRow)
+        // Only keeps rows for weather station De Bilt.
+        .filter(row -> Objects.equals(row.location, "260_T_a"))
+        // Remove rows without temperature reading and are not potentially part of a heat wave.
+        .filter(row -> row.maxTemperature != null && row.maxTemperature >= 25.0)
+        // Find max temperature per date.
+        .mapToPair(row -> (new Tuple2<>(row.date, row)))
+        .reduceByKey((v1, v2) -> (v1.maxTemperature >= v2.maxTemperature ? v1 : v2))
+        // Sort by date for the heatwave calculation algorithm.
+        .sortByKey().values();
 
     List<DailyTemperatureReading> potentialHeatWaveDays = preprocessedRdd.collect();
     List<HeatWave> heatWaves = calculateHeatWaves(potentialHeatWaveDays);
@@ -101,10 +103,17 @@ public class HeatWaveApp {
    * This is the entry point for running heatwave.
    */
   public static void main(String[] args) {
+    if (args.length != 1) {
+      System.out.println("Please pass a path to the data to be processed. Exiting.");
+      System.exit(1);
+    }
+
+    String path = args[0];
+
     SparkConf conf = new SparkConf().setAppName("HeatWaveApp").setMaster("local[*]");
 
     try (JavaSparkContext sc = new JavaSparkContext(conf)) {
-      run(sc);
+      run(sc, path);
     }
 
   }
