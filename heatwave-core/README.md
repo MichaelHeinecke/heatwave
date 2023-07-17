@@ -37,8 +37,11 @@ Run the app locally with
 
 ```bash
 export MAVEN_OPTS="--add-exports java.base/sun.nio.ch=ALL-UNNAMED"
-mvn clean compile exec:java -Dexec.args="../data/kis_tot_20030*"
+mvn clean compile exec:java -Dexec.args="../data/*"
 ```
+
+A path to the input files needs to be passed as CLI argument when running the
+app.
 
 The settings of MAVEN_OPTS is necessary, as Spark accesses
 sun.nio.ch.DirectBuffer although access to this was restricted in Java 9. For
