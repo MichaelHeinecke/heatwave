@@ -28,6 +28,13 @@ public class HeatWaveApp {
     return LocalDate.parse(string, formatter);
   }
 
+  /**
+   * The run method reads the input files, pre-processes the data, and calls the algorithm to find
+   * heat waves in the data.
+   *
+   * @param sc   A JavaSparkContext.
+   * @param path A path to the input files to be processed.
+   */
   static void run(JavaSparkContext sc, String path) {
     JavaRDD<DailyTemperatureReading> preprocessedRdd = sc.textFile(path, 8)
         // Remove header rows
