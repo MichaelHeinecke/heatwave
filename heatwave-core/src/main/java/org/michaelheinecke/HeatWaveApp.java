@@ -10,43 +10,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 public class HeatWaveApp {
-
-  static class HeatWave {
-    LocalDate startDate;
-    LocalDate endDate;
-    int startIndex;
-    int endIndex;
-    int numberOfDays;
-    int numberOfTropicalDays;
-    double maxTemp;
-
-    HeatWave() {
-      this.startDate = null;
-      this.endDate = null;
-      this.startIndex = 0;
-      this.endIndex = 0;
-      this.numberOfDays = 0;
-      this.numberOfTropicalDays = 0;
-      this.maxTemp = 0.0;
-    }
-
-    boolean isHeatwave(){
-      return this.numberOfDays >= 5 && this.numberOfTropicalDays >= 3;
-    }
-
-    @Override
-    public String toString() {
-      return String.format(
-          "From date: %s, to date: %s, duration: %d, Number Tropical Days: %d, Max Temperature: %.1f",
-          startDate, endDate, numberOfDays, numberOfTropicalDays, maxTemp);
-    }
-  }
 
   static List<HeatWave> calculateHeatWaves(List<DailyTemperatureReading> days) {
     List<HeatWave> heatwaves = new ArrayList<>();
@@ -74,7 +42,7 @@ public class HeatWaveApp {
       // or the end of an uninterrupted sequence of days with maximum temperatures of at least 25,
       // check if we found a heat wave.
       if (i == days.size() - 1 || ChronoUnit.DAYS.between(day.date, days.get(i + 1).date) > 1) {
-        if (wave.isHeatwave()){
+        if (wave.isHeatwave()) {
           // Calculate the inclusive end date of the wave.
           wave.endDate = wave.startDate.plusDays(wave.numberOfDays - 1);
           heatwaves.add(wave);
@@ -87,11 +55,69 @@ public class HeatWaveApp {
     return heatwaves;
   }
 
-
-
-  static LocalDate parseDateTime(String string){
+  static LocalDate parseDateTime(String string) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     return LocalDate.parse(string, formatter);
+  }
+
+  static void run(JavaSparkContext sc) {
+    JavaRDD<DailyTemperatureReading> preprocessedRdd =
+        sc.textFile("./data/kis_tot_20030*", 8).filter(line -> !line.startsWith("#"))
+            .map(DailyTemperatureReading::parseRow)
+            // Only keeps rows for weather station De Bilt.
+            .filter(row -> Objects.equals(row.location, "260_T_a"))
+            // Remove rows without temperature reading and are not potentially part of a heat wave.
+            .filter(row -> row.maxTemperature != null && row.maxTemperature >= 25.0)
+            // Find max temperature per date.
+            .mapToPair(row -> (new Tuple2<>(row.date, row)))
+            .reduceByKey((v1, v2) -> (v1.maxTemperature >= v2.maxTemperature ? v1 : v2))
+            // Sort by date for the heatwave calculation algorithm.
+            .sortByKey().values();
+
+    List<DailyTemperatureReading> potentialHeatWaveDays = preprocessedRdd.collect();
+    List<HeatWave> heatWaves = calculateHeatWaves(potentialHeatWaveDays);
+
+    System.out.println(Arrays.toString(heatWaves.toArray()));
+  }
+
+  public static void main(String[] args) {
+    SparkConf conf = new SparkConf().setAppName("HeatWaveApp").setMaster("local[*]");
+
+    try (JavaSparkContext sc = new JavaSparkContext(conf)) {
+      run(sc);
+    }
+
+  }
+
+  static class HeatWave {
+    LocalDate startDate;
+    LocalDate endDate;
+    int startIndex;
+    int endIndex;
+    int numberOfDays;
+    int numberOfTropicalDays;
+    double maxTemp;
+
+    HeatWave() {
+      this.startDate = null;
+      this.endDate = null;
+      this.startIndex = 0;
+      this.endIndex = 0;
+      this.numberOfDays = 0;
+      this.numberOfTropicalDays = 0;
+      this.maxTemp = 0.0;
+    }
+
+    boolean isHeatwave() {
+      return this.numberOfDays >= 5 && this.numberOfTropicalDays >= 3;
+    }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "From date: %s, to date: %s, duration: %d, Number Tropical Days: %d, Max Temperature: %"
+              + ".1f", startDate, endDate, numberOfDays, numberOfTropicalDays, maxTemp);
+    }
   }
 
   static class DailyTemperatureReading implements Serializable {
@@ -105,48 +131,16 @@ public class HeatWaveApp {
       this.maxTemperature = maxTemperature;
     }
 
-    static DailyTemperatureReading parseRow(String row){
-      return new DailyTemperatureReading(
-          parseDateTime(row.substring(0, 21).trim()),
-          row.substring(21, 41).trim(),
-          row.substring(309, 329).trim().equals("") ? null : Double.parseDouble(row.substring(309, 329).trim())
-      );
+    static DailyTemperatureReading parseRow(String row) {
+      return new DailyTemperatureReading(parseDateTime(row.substring(0, 21).trim()),
+          row.substring(21, 41).trim(), row.substring(309, 329).trim().equals("") ? null :
+          Double.parseDouble(row.substring(309, 329).trim()));
     }
 
     @Override
     public String toString() {
-      return String.format("(date=%s, location=%s, maxTemperature=%.1f)",
-          date.toString(), location, maxTemperature);
-    }
-  }
-
-  static void run(JavaSparkContext sc) {
-    JavaRDD<DailyTemperatureReading> preprocessedRDD = sc
-        .textFile("./data/kis_tot_20030*", 8)
-        .filter(line -> !line.startsWith("#"))
-        .map(DailyTemperatureReading::parseRow)
-        // Only keeps rows for weather station De Bilt.
-        .filter(row -> Objects.equals(row.location, "260_T_a"))
-        // Remove rows without temperature reading and are not potentially part of a heat wave.
-        .filter(row -> row.maxTemperature != null && row.maxTemperature >= 25.0)
-        // Find max temperature per date.
-        .mapToPair(row -> (new Tuple2<>(row.date, row)))
-        .reduceByKey((v1, v2) -> (v1.maxTemperature >= v2.maxTemperature ? v1 : v2))
-        // Sort by date for the heatwave calculation algorithm.
-        .sortByKey()
-        .values();
-
-    List<DailyTemperatureReading> potentialHeatWaveDays = preprocessedRDD.collect();
-    List<HeatWave> heatWaves = calculateHeatWaves(potentialHeatWaveDays);
-
-    System.out.println(Arrays.toString(heatWaves.toArray()));
-  }
-
-  public static void main(String[] args) {
-    SparkConf conf = new SparkConf().setAppName("HeatWaveApp").setMaster("local[*]");
-
-    try(JavaSparkContext sc = new JavaSparkContext(conf)) {
-      run(sc);
+      return String.format("(date=%s, location=%s, maxTemperature=%.1f)", date.toString(), location,
+          maxTemperature);
     }
   }
 }
