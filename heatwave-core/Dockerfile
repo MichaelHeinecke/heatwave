@@ -1,5 +1,5 @@
 # Adapted from https://levelup.gitconnected.com/how-to-run-spark-with-docker-c6287a11a437
-FROM eclipse-temurin:17.0.7_7-jre
+FROM eclipse-temurin:20.0.2_9-jre
 
 # VERSIONS
 ENV SPARK_VERSION=3.4.1 \
